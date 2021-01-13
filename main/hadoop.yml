@@ -1,0 +1,85 @@
+- hosts:
+        - namenode
+        - datanode
+  vars_files:
+          - sw_path.yml
+  tasks:
+        - name: "Copy Hadoop Softwares"
+          copy:
+                  src: "{{ hadoop_software_path }}"
+                  dest: "/root/"
+        - name: "Copy Jav-JDK"
+          copy:
+                  src: "{{ java_jdk_path }}"
+                  dest: "/root/"
+- hosts:
+        - namenode
+        - datanode
+  vars_files:
+          - sw_name.yml
+  tasks:
+          - name: "Installing Java-Jdk"
+            command:
+                    cmd: "rpm -ivh /root/{{ java_jdk }}"
+            ignore_errors: yes
+          - name: "Installing Hadoop Software"
+            command:
+                    cmd: "rpm -ivh /root/{{ hadoop_software }} --force"
+            ignore_errors: yes
+- hosts:
+        - namenode
+  vars_files:
+          - nn_var.yml
+  tasks:
+          - name: "Creating a folder"
+            file:
+                    state: directory
+                    path: "{{ name_node_folder }}"
+          - name: "Configuring the hdfs-site.xml file"
+            template:
+                    src: "{{ temp_for_hdfs_file }}"
+                    dest: "/etc/hadoop/hdfs-site.xml"
+          - name: "Configuring the core-site.xml file"
+            template:
+                    src: "{{ temp_for_core_file }}"
+                    dest: "/etc/hadoop/core-site.xml"
+          - name: "Take Core-site.xml file from NN to disturbute"
+            command:
+                    cmd: "sshpass -p {{ cn_password }} scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /etc/hadoop/core-site.xml root@{{ localhost_ip }}:/hadoop_softwares/core-site-hardcode.xml "
+          - name: "Format the folder"
+            shell:
+                    cmd: "echo Y | hadoop namenode -format"
+          - name: "Start the Nodenode"
+            command:
+                    cmd: "hadoop-daemon.sh start namenode"
+          - command:
+                  cmd: "jps"
+            register: nn
+          - name: "Get output of jps"
+            debug:
+                    var: nn
+- hosts: datanode
+  vars_files:
+          - dn_var.yml
+  tasks:
+          - name: "Creating a folder"
+            file:
+                    state: directory
+                    path: "{{ data_node_folder }}"
+          - name: "Configuring the hdfs-site.xml file"
+            template:
+                    src: "{{ temp_for_hdfs_file }}"
+                    dest: "/etc/hadoop/hdfs-site.xml"
+          - name: "Configuring the core-site.xml file"
+            copy:
+                    src: "{{ file_for_core_file }}"
+                    dest: "/etc/hadoop/core-site.xml"
+          - name: "Start the Datanode"
+            command:
+                    cmd: "hadoop-daemon.sh start datanode"
+          - command:
+                  cmd: "jps"
+            register: dn
+          - name: "Get output of jps"
+            debug:
+                    var: dn

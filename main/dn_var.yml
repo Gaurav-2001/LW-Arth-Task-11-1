@@ -1,0 +1,3 @@
+data_node_folder: "/DN"
+temp_for_hdfs_file: "/hadoop_softwares/hdfs-site-for-DN.xml"
+file_for_core_file: "/hadoop_softwares/core-site-hardcode.xml"

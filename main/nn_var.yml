@@ -1,0 +1,6 @@
+name_node_folder: "/NN"
+temp_for_hdfs_file: "/hadoop_softwares/hdfs-site-for-NN.xml"
+temp_for_core_file: "/hadoop_softwares/core-site-template.xml"
+cn_password: "Pass@123"
+localhost_ip: "192.168.43.39"
+port: "9001"
